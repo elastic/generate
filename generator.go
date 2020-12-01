@@ -51,6 +51,7 @@ func (g *Generator) CreateTypes() (err error) {
 				Type:        rootType,
 				Required:    false,
 				Description: schema.Description,
+				Format:      schema.Format,
 			}
 			g.Aliases[a.Name] = a
 		}
@@ -162,6 +163,7 @@ func (g *Generator) processArray(name string, schema *Schema) (typeStr string, e
 				Type:        finalType,
 				Required:    contains(schema.Required, name),
 				Description: schema.Description,
+				Format:      schema.Format,
 			}
 			g.Aliases[array.Name] = array
 		}
@@ -197,6 +199,7 @@ func (g *Generator) processObject(name string, schema *Schema) (typ string, err 
 			Type:        fieldType,
 			Required:    contains(schema.Required, propKey),
 			Description: prop.Description,
+			Format:      prop.Format,
 		}
 		if f.Required {
 			strct.GenerateCode = true
@@ -396,4 +399,5 @@ type Field struct {
 	// Required is set to true when the field is required.
 	Required    bool
 	Description string
+	Format      string
 }
