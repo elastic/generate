@@ -8,6 +8,8 @@ import (
 	"strings"
 )
 
+const kRaw = "raw"
+
 func getOrderedFieldNames(m map[string]Field) []string {
 	keys := make([]string, len(m))
 	idx := 0
@@ -31,7 +33,7 @@ func getOrderedStructNames(m map[string]Struct) []string {
 }
 
 // Output generates code and writes to w.
-func Output(w io.Writer, g *Generator, pkg string) {
+func Output(w io.Writer, g *Generator, pkg string, skipCode bool) {
 	structs := g.Structs
 	aliases := g.Aliases
 
@@ -46,9 +48,13 @@ func Output(w io.Writer, g *Generator, pkg string) {
 
 	for _, k := range getOrderedStructNames(structs) {
 		s := structs[k]
-		if s.GenerateCode {
-			emitMarshalCode(codeBuf, s, imports)
-			emitUnmarshalCode(codeBuf, s, imports)
+		if !skipCode {
+			if s.GenerateCode {
+				emitMarshalCode(codeBuf, s, imports)
+				emitUnmarshalCode(codeBuf, s, imports)
+			}
+		} else {
+			imports["encoding/json"] = true
 		}
 	}
 
@@ -88,7 +94,11 @@ func Output(w io.Writer, g *Generator, pkg string) {
 				outputFieldDescriptionComment(f.Description, w)
 			}
 
-			fmt.Fprintf(w, "  %s %s `json:\"%s%s\"`\n", f.Name, f.Type, f.JSONName, omitempty)
+			ftype := f.Type
+			if f.Format == "raw" {
+				ftype = "json.RawMessage"
+			}
+			fmt.Fprintf(w, "  %s %s `json:\"%s%s\"`\n", f.Name, ftype, f.JSONName, omitempty)
 		}
 
 		fmt.Fprintln(w, "}")
