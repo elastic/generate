@@ -99,7 +99,7 @@ func renderStructMapping(indent int, w io.Writer, s Struct, structs map[string]S
 
 		if esType == "object" {
 			if s, ok := structs[name]; ok {
-				if s.AdditionalType != "" {
+				if s.AdditionalType != "" || f.Format == "raw" {
 					fmt.Fprintln(w, "{")
 					indent++
 					printIndentedLn(indent, w, `"enabled" : false,`)
