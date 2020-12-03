@@ -95,6 +95,9 @@ func Output(w io.Writer, g *Generator, pkg string, skipCode bool) {
 			}
 
 			ftype := f.Type
+			if ftype == "int" {
+				ftype = "int64"
+			}
 			if f.Format == "raw" {
 				ftype = "json.RawMessage"
 			}
