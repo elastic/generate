@@ -29,7 +29,7 @@ func ESOutput(w io.Writer, g *Generator, pkg string) {
 		fmt.Fprintln(w)
 		outputNameAndDescriptionComment(s.Name, s.Description, w)
 
-		fmt.Fprintf(w, "kMapping%s = `", s.Name)
+		fmt.Fprintf(w, "Mapping%s = `", s.Name)
 
 		renderStructMapping(indent, w, s, structs)
 
