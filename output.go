@@ -101,7 +101,11 @@ func Output(w io.Writer, g *Generator, pkg string, skipCode bool) {
 			if f.Format == "raw" {
 				ftype = "json.RawMessage"
 			}
-			fmt.Fprintf(w, "  %s %s `json:\"%s%s\"`\n", f.Name, ftype, f.JSONName, omitempty)
+			jsonName := f.JSONName
+			if strings.HasPrefix(f.JSONName, "_") {
+				jsonName = "-"
+			}
+			fmt.Fprintf(w, "  %s %s `json:\"%s%s\"`\n", f.Name, ftype, jsonName, omitempty)
 		}
 
 		fmt.Fprintln(w, "}")

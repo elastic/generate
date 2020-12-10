@@ -81,7 +81,7 @@ func renderStructMapping(indent int, w io.Writer, s Struct, structs map[string]S
 	var count int
 	for _, fieldKey := range fieldNames {
 		f := s.Fields[fieldKey]
-		if f.JSONName == "_id" || f.JSONName == "_version" || f.JSONName == "-" {
+		if strings.HasPrefix(f.JSONName, "_") || f.JSONName == "-" {
 			// Do not add these fields into mapping
 			// they will conflict with the ES fields
 			continue
