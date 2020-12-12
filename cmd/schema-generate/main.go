@@ -22,6 +22,7 @@ var (
 	schemaKeyRequiredFlag = flag.Bool("schemaKeyRequired", false, "Allow input files with no $schema key.")
 	mode                  = flag.String("m", "", "Output mode: Default (empty) for Go structures or \"es\" for ES mapping")
 	skipCode              = flag.Bool("s", false, "Skip marshalling code generation.")
+	esdoc                 = flag.Bool("esdoc", false, "Generate ES Document base struct.")
 )
 
 func main() {
@@ -73,6 +74,6 @@ func main() {
 	case modeES:
 		generate.ESOutput(w, g, *p)
 	default:
-		generate.Output(w, g, *p, *skipCode)
+		generate.Output(w, g, *p, *skipCode, *esdoc)
 	}
 }
