@@ -105,11 +105,24 @@ func Output(w io.Writer, g *Generator, pkg string, skipCode bool, esdoc bool) {
 	orderedStructNames := getOrderedStructNames(structs)
 	if esdoc && len(orderedStructNames) > 0 {
 		fmt.Fprintln(w, "")
+		fmt.Fprintln(w, "type ESInitializer interface {")
+		fmt.Fprintln(w, "\tESInitialize(id string, seqno, version int64)")
+		fmt.Fprintln(w, "}")
+
+		fmt.Fprintln(w, "")
 		fmt.Fprintln(w, "type ESDocument struct {")
 		fmt.Fprintln(w, "\tId string `json:\"-\"`")
 		fmt.Fprintln(w, "\tVersion int64 `json:\"-\"`")
 		fmt.Fprintln(w, "\tSeqNo int64 `json:\"-\"`")
 		fmt.Fprintln(w, "}")
+
+		fmt.Fprintln(w, "")
+		fmt.Fprintln(w, "func (d *ESDocument) ESInitialize(id string, seqno, version int64) {")
+		fmt.Fprintln(w, "\td.Id = id")
+		fmt.Fprintln(w, "\td.SeqNo = seqno")
+		fmt.Fprintln(w, "\td.Version = version")
+		fmt.Fprintln(w, "}")
+		fmt.Fprintln(w, "")
 	}
 
 	for _, k := range orderedStructNames {
@@ -144,7 +157,7 @@ func Output(w io.Writer, g *Generator, pkg string, skipCode bool, esdoc bool) {
 
 			// Only apply omitempty if the field is not required.
 			omitempty := ",omitempty"
-			if f.Required {
+			if f.Required || jsonName == "-" {
 				omitempty = ""
 			}
 
