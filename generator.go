@@ -281,6 +281,9 @@ func getPrimitiveTypeName(schemaType string, subType string, pointer bool) (name
 		if subType == "" {
 			return "error_creating_array", errors.New("can't create an array of an empty subtype")
 		}
+		if subType == "int" {
+			subType = "int64"
+		}
 		return "[]" + subType, nil
 	case "boolean":
 		return "bool", nil
