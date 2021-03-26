@@ -98,7 +98,8 @@ func renderStructMapping(indent int, w io.Writer, s Struct, structs map[string]S
 		name := strings.Trim(f.Type, "*")
 
 		if esType == "object" {
-			if s, ok := structs[name]; ok {
+			s, ok := structs[name]
+			if ok {
 				if s.AdditionalType != "" || f.Format == "raw" {
 					fmt.Fprintln(w, "{")
 					indent++
@@ -111,6 +112,16 @@ func renderStructMapping(indent int, w io.Writer, s Struct, structs map[string]S
 					renderStructMapping(indent-1, w, s, structs)
 					indent--
 				}
+			} else {
+				fmt.Fprintln(w, "{")
+				indent++
+				ftype := "keyword"
+				if name == "[]int64" {
+					ftype = "integer"
+				}
+				printIndentedLn(indent, w, `"type": "%s"`, ftype)
+				indent--
+				printIndented(indent, w, "}")
 			}
 		} else {
 			fmt.Fprintln(w, "{")
