@@ -58,7 +58,7 @@ func filterNoRender(structs map[string]Struct) map[string]Struct {
 func check(level int, s Struct, structs, result map[string]Struct) {
 	for _, f := range s.Fields {
 		esType := getESType(f)
-		name := strings.Trim(f.Type, "*")
+		name := strings.Trim(f.Type, "[]*")
 
 		if esType == "object" {
 			fmt.Println("name: ", name, "level:", level)
@@ -95,7 +95,7 @@ func renderStructMapping(indent int, w io.Writer, s Struct, structs map[string]S
 		printIndented(indent, w, `"%s": `, f.JSONName)
 
 		esType := getESType(f)
-		name := strings.Trim(f.Type, "*")
+		name := strings.Trim(f.Type, "[]*")
 
 		if esType == "object" {
 			s, ok := structs[name]
@@ -116,7 +116,7 @@ func renderStructMapping(indent int, w io.Writer, s Struct, structs map[string]S
 				fmt.Fprintln(w, "{")
 				indent++
 				ftype := "keyword"
-				if name == "[]int64" {
+				if name == "int64" {
 					ftype = "integer"
 				}
 				printIndentedLn(indent, w, `"type": "%s"`, ftype)

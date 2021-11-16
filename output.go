@@ -41,7 +41,7 @@ func collectTopLevelStruct(structs map[string]Struct) map[string]Struct {
 
 	for _, s := range structs {
 		for _, f := range s.Fields {
-			sname := strings.Trim(f.Type, "*")
+			sname := strings.Trim(f.Type, "[]*")
 			if _, ok := m[sname]; ok {
 				delete(m, sname)
 			}

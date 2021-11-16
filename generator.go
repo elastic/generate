@@ -284,7 +284,7 @@ func getPrimitiveTypeName(schemaType string, subType string, pointer bool) (name
 		if subType == "int" {
 			subType = "int64"
 		}
-		return "[]" + subType, nil
+		return "[]" + strings.Trim(subType, "*"), nil
 	case "boolean":
 		return "bool", nil
 	case "integer":
