@@ -8,7 +8,7 @@ import (
 	"io"
 	"os"
 
-	"github.com/aleksmaus/generate"
+	generate "github.com/elastic/go-json-schema-generate"
 )
 
 const (

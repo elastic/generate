@@ -5,7 +5,7 @@ import (
 	"reflect"
 	"testing"
 
-	gen "github.com/aleksmaus/generate/test/additionalPropertiesMarshal_gen"
+	gen "github.com/elastic/go-json-schema-generate/test/additionalPropertiesMarshal_gen"
 )
 
 func TestApRefNoProp(t *testing.T) {

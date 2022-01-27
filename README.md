@@ -11,7 +11,7 @@ Generates Go (golang) Structs and Validation code from JSON schema.
 Install
 
 ```console
-$ go get -u github.com/aleksmaus/generate/...
+$ go get -u github.com/elastic/go-json-schema-generate/...
 ```
 
 or
