@@ -2,6 +2,8 @@
 
 Generates Go (golang) Structs and Validation code from JSON schema.
 
+### ATTN: This is a customized version of the original generator based on the elastic fleet-server schema/code requirements.
+
 # Requirements
 
 * Go 1.8+
