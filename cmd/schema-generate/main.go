@@ -8,7 +8,11 @@ import (
 	"io"
 	"os"
 
-	"github.com/a-h/generate"
+	"github.com/aleksmaus/generate"
+)
+
+const (
+	modeES = "es"
 )
 
 var (
@@ -16,6 +20,9 @@ var (
 	p                     = flag.String("p", "main", "The package that the structs are created in.")
 	i                     = flag.String("i", "", "A single file path (used for backwards compatibility).")
 	schemaKeyRequiredFlag = flag.Bool("schemaKeyRequired", false, "Allow input files with no $schema key.")
+	mode                  = flag.String("m", "", "Output mode: Default (empty) for Go structures or \"es\" for ES mapping")
+	skipCode              = flag.Bool("s", false, "Skip marshalling code generation.")
+	esdoc                 = flag.Bool("esdoc", false, "Generate ES Document base struct.")
 )
 
 func main() {
@@ -63,5 +70,10 @@ func main() {
 		}
 	}
 
-	generate.Output(w, g, *p)
+	switch *mode {
+	case modeES:
+		generate.ESOutput(w, g, *p)
+	default:
+		generate.Output(w, g, *p, *skipCode, *esdoc)
+	}
 }

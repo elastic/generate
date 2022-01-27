@@ -8,6 +8,8 @@ import (
 	"strings"
 )
 
+const kRaw = "raw"
+
 func getOrderedFieldNames(m map[string]Field) []string {
 	keys := make([]string, len(m))
 	idx := 0
@@ -30,8 +32,32 @@ func getOrderedStructNames(m map[string]Struct) []string {
 	return keys
 }
 
+func collectTopLevelStruct(structs map[string]Struct) map[string]Struct {
+	m := make(map[string]Struct)
+
+	for sk, s := range structs {
+		m[sk] = s
+	}
+
+	for _, s := range structs {
+		for _, f := range s.Fields {
+			sname := strings.Trim(f.Type, "[]*")
+			if _, ok := m[sname]; ok {
+				delete(m, sname)
+			}
+		}
+	}
+	return m
+}
+
+var esDocumentFields = map[string]struct{}{
+	"_id":      {},
+	"_version": {},
+	"_seq_no":  {},
+}
+
 // Output generates code and writes to w.
-func Output(w io.Writer, g *Generator, pkg string) {
+func Output(w io.Writer, g *Generator, pkg string, skipCode bool, esdoc bool) {
 	structs := g.Structs
 	aliases := g.Aliases
 
@@ -44,11 +70,19 @@ func Output(w io.Writer, g *Generator, pkg string) {
 	codeBuf := new(bytes.Buffer)
 	imports := make(map[string]bool)
 
+	// collect Top level structs
+	topLevel := collectTopLevelStruct(structs)
+	_ = topLevel
+
 	for _, k := range getOrderedStructNames(structs) {
 		s := structs[k]
-		if s.GenerateCode {
-			emitMarshalCode(codeBuf, s, imports)
-			emitUnmarshalCode(codeBuf, s, imports)
+		if !skipCode {
+			if s.GenerateCode {
+				emitMarshalCode(codeBuf, s, imports)
+				emitUnmarshalCode(codeBuf, s, imports)
+			}
+		} else {
+			imports["encoding/json"] = true
 		}
 	}
 
@@ -68,19 +102,62 @@ func Output(w io.Writer, g *Generator, pkg string) {
 		fmt.Fprintf(w, "type %s %s\n", a.Name, a.Type)
 	}
 
-	for _, k := range getOrderedStructNames(structs) {
+	orderedStructNames := getOrderedStructNames(structs)
+	if esdoc && len(orderedStructNames) > 0 {
+		fmt.Fprintln(w, "")
+		fmt.Fprintln(w, "type ESInitializer interface {")
+		fmt.Fprintln(w, "\tESInitialize(id string, seqno, version int64)")
+		fmt.Fprintln(w, "}")
+
+		fmt.Fprintln(w, "")
+		fmt.Fprintln(w, "type ESDocument struct {")
+		fmt.Fprintln(w, "\tId string `json:\"-\"`")
+		fmt.Fprintln(w, "\tVersion int64 `json:\"-\"`")
+		fmt.Fprintln(w, "\tSeqNo int64 `json:\"-\"`")
+		fmt.Fprintln(w, "}")
+
+		fmt.Fprintln(w, "")
+		fmt.Fprintln(w, "func (d *ESDocument) ESInitialize(id string, seqno, version int64) {")
+		fmt.Fprintln(w, "\td.Id = id")
+		fmt.Fprintln(w, "\td.SeqNo = seqno")
+		fmt.Fprintln(w, "\td.Version = version")
+		fmt.Fprintln(w, "}")
+		fmt.Fprintln(w, "")
+	}
+
+	for _, k := range orderedStructNames {
 		s := structs[k]
 
 		fmt.Fprintln(w, "")
 		outputNameAndDescriptionComment(s.Name, s.Description, w)
 		fmt.Fprintf(w, "type %s struct {\n", s.Name)
 
+		isTopLevel := false
+		if esdoc {
+			if _, ok := topLevel[s.Name]; ok {
+				fmt.Fprintln(w, "  ESDocument")
+				isTopLevel = true
+			}
+		}
 		for _, fieldKey := range getOrderedFieldNames(s.Fields) {
 			f := s.Fields[fieldKey]
 
+			jsonName := f.JSONName
+			if esdoc {
+				if isTopLevel {
+					if _, ok := esDocumentFields[jsonName]; ok {
+						continue
+					}
+				}
+			} else {
+				if strings.HasPrefix(jsonName, "_") {
+					jsonName = "-"
+				}
+			}
+
 			// Only apply omitempty if the field is not required.
 			omitempty := ",omitempty"
-			if f.Required {
+			if f.Required || jsonName == "-" {
 				omitempty = ""
 			}
 
@@ -88,7 +165,14 @@ func Output(w io.Writer, g *Generator, pkg string) {
 				outputFieldDescriptionComment(f.Description, w)
 			}
 
-			fmt.Fprintf(w, "  %s %s `json:\"%s%s\"`\n", f.Name, f.Type, f.JSONName, omitempty)
+			ftype := f.Type
+			if ftype == "int" {
+				ftype = "int64"
+			}
+			if f.Format == "raw" {
+				ftype = "json.RawMessage"
+			}
+			fmt.Fprintf(w, "  %s %s `json:\"%s%s\"`\n", f.Name, ftype, jsonName, omitempty)
 		}
 
 		fmt.Fprintln(w, "}")

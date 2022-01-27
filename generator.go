@@ -51,6 +51,7 @@ func (g *Generator) CreateTypes() (err error) {
 				Type:        rootType,
 				Required:    false,
 				Description: schema.Description,
+				Format:      schema.Format,
 			}
 			g.Aliases[a.Name] = a
 		}
@@ -162,6 +163,7 @@ func (g *Generator) processArray(name string, schema *Schema) (typeStr string, e
 				Type:        finalType,
 				Required:    contains(schema.Required, name),
 				Description: schema.Description,
+				Format:      schema.Format,
 			}
 			g.Aliases[array.Name] = array
 		}
@@ -197,6 +199,7 @@ func (g *Generator) processObject(name string, schema *Schema) (typ string, err 
 			Type:        fieldType,
 			Required:    contains(schema.Required, propKey),
 			Description: prop.Description,
+			Format:      prop.Format,
 		}
 		if f.Required {
 			strct.GenerateCode = true
@@ -278,7 +281,10 @@ func getPrimitiveTypeName(schemaType string, subType string, pointer bool) (name
 		if subType == "" {
 			return "error_creating_array", errors.New("can't create an array of an empty subtype")
 		}
-		return "[]" + subType, nil
+		if subType == "int" {
+			subType = "int64"
+		}
+		return "[]" + strings.Trim(subType, "*"), nil
 	case "boolean":
 		return "bool", nil
 	case "integer":
@@ -396,4 +402,5 @@ type Field struct {
 	// Required is set to true when the field is required.
 	Required    bool
 	Description string
+	Format      string
 }
