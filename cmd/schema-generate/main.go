@@ -3,6 +3,7 @@
 package main
 
 import (
+	"encoding/json"
 	"flag"
 	"fmt"
 	"io"
@@ -21,6 +22,7 @@ var (
 	i                     = flag.String("i", "", "A single file path (used for backwards compatibility).")
 	schemaKeyRequiredFlag = flag.Bool("schemaKeyRequired", false, "Allow input files with no $schema key.")
 	mode                  = flag.String("m", "", "Output mode: Default (empty) for Go structures or \"es\" for ES mapping")
+	conventionMapJSON     = flag.String("cm", "{}", "JSON map used for field naming replacement. Ex: {\"Api\": \"API\"}")
 	skipCode              = flag.Bool("s", false, "Skip marshalling code generation.")
 	esdoc                 = flag.Bool("esdoc", false, "Generate ES Document base struct.")
 )
@@ -53,7 +55,9 @@ func main() {
 
 	g := generate.New(schemas...)
 
-	err = g.CreateTypes()
+	var conventionMap map[string]string
+	json.Unmarshal([]byte(*conventionMapJSON), &conventionMap)
+	err = g.CreateTypes(conventionMap)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "Failure generating structs: ", err)
 		os.Exit(1)

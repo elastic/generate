@@ -7,6 +7,8 @@ import (
 	"testing"
 )
 
+var conventionStub = make(map[string]string)
+
 func TestThatCapitalisationOccursCorrectly(t *testing.T) {
 	tests := []struct {
 		input    string
@@ -73,7 +75,7 @@ func TestFieldGeneration(t *testing.T) {
 	}
 	root.Init()
 	g := New(&root)
-	err := g.CreateTypes()
+	err := g.CreateTypes(conventionStub)
 
 	// Output(os.Stderr, g, "test")
 
@@ -151,7 +153,7 @@ func TestFieldGenerationWithArrayReferences(t *testing.T) {
 	root.Init()
 
 	g := New(&root)
-	err := g.CreateTypes()
+	err := g.CreateTypes(conventionStub)
 
 	//Output(os.Stderr, g, "test")
 
@@ -199,7 +201,7 @@ func TestNestedStructGeneration(t *testing.T) {
 	root.Init()
 
 	g := New(root)
-	err := g.CreateTypes()
+	err := g.CreateTypes(conventionStub)
 	results := g.Structs
 
 	//Output(os.Stderr, g, "test")
@@ -240,7 +242,7 @@ func TestEmptyNestedStructGeneration(t *testing.T) {
 	root.Init()
 
 	g := New(root)
-	err := g.CreateTypes()
+	err := g.CreateTypes(conventionStub)
 	results := g.Structs
 
 	// Output(os.Stderr, g, "test")
@@ -313,7 +315,7 @@ func TestStructGeneration(t *testing.T) {
 	root.Init()
 
 	g := New(root)
-	err := g.CreateTypes()
+	err := g.CreateTypes(conventionStub)
 	results := g.Structs
 
 	// Output(os.Stderr, g, "test")
@@ -344,7 +346,7 @@ func TestArrayGeneration(t *testing.T) {
 	root.Init()
 
 	g := New(root)
-	err := g.CreateTypes()
+	err := g.CreateTypes(conventionStub)
 	results := g.Structs
 
 	// Output(os.Stderr, g, "test")
@@ -402,7 +404,7 @@ func TestNestedArrayGeneration(t *testing.T) {
 	root.Init()
 
 	g := New(root)
-	err := g.CreateTypes()
+	err := g.CreateTypes(conventionStub)
 	results := g.Structs
 
 	// Output(os.Stderr, g, "test")
@@ -484,7 +486,7 @@ func TestMultipleSchemaStructGeneration(t *testing.T) {
 	root2.Init()
 
 	g := New(root1, root2)
-	err := g.CreateTypes()
+	err := g.CreateTypes(conventionStub)
 	results := g.Structs
 
 	// Output(os.Stderr, g, "test")
@@ -547,11 +549,19 @@ func TestThatJavascriptKeyNamesCanBeConvertedToValidGoNames(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		actual := getGolangName(test.input)
+		actual := getGolangName(test.input, conventionStub)
 
 		if test.expected != actual {
 			t.Errorf("For test '%s', for input '%s' expected '%s' but got '%s'.", test.description, test.input, test.expected, actual)
 		}
+	}
+}
+
+func TestNamingConventionApplication(t *testing.T) {
+	name := getGolangName("foo.bar", map[string]string{"Foo": "FOO"})
+
+	if name != "FOOBar" {
+		t.Error("Conventions should be applied")
 	}
 }
 
@@ -568,7 +578,7 @@ func TestThatArraysWithoutDefinedItemTypesAreGeneratedAsEmptyInterfaces(t *testi
 	root.Init()
 
 	g := New(root)
-	err := g.CreateTypes()
+	err := g.CreateTypes(conventionStub)
 	results := g.Structs
 
 	// Output(os.Stderr, g, "test")
@@ -602,7 +612,7 @@ func TestThatTypesWithMultipleDefinitionsAreGeneratedAsEmptyInterfaces(t *testin
 	root.Init()
 
 	g := New(root)
-	err := g.CreateTypes()
+	err := g.CreateTypes(conventionStub)
 	results := g.Structs
 
 	// Output(os.Stderr, g, "test")
@@ -751,7 +761,7 @@ func TestTypeAliases(t *testing.T) {
 		test.input.Init()
 
 		g := New(test.input)
-		err := g.CreateTypes()
+		err := g.CreateTypes(conventionStub)
 		structs := g.Structs
 		aliases := g.Aliases
 
