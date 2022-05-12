@@ -166,9 +166,9 @@ func TestFieldGenerationWithArrayReferences(t *testing.T) {
 	}
 
 	testField(g.Structs["TestFieldGenerationWithArrayReferences"].Fields["Property1"], "property1", "Property1", "string", false, t)
-	testField(g.Structs["TestFieldGenerationWithArrayReferences"].Fields["Property2"], "property2", "Property2", "[]*Address", true, t)
+	testField(g.Structs["TestFieldGenerationWithArrayReferences"].Fields["Property2"], "property2", "Property2", "[]Address", true, t)
 	testField(g.Structs["TestFieldGenerationWithArrayReferences"].Fields["Property3"], "property3", "Property3", "[]map[string]int", false, t)
-	testField(g.Structs["TestFieldGenerationWithArrayReferences"].Fields["Property4"], "property4", "Property4", "[][]*Inner", false, t)
+	testField(g.Structs["TestFieldGenerationWithArrayReferences"].Fields["Property4"], "property4", "Property4", "[][]Inner", false, t)
 }
 
 func testField(actual Field, expectedJSONName string, expectedName string, expectedType string, expectedToBeRequired bool, t *testing.T) {
@@ -430,8 +430,8 @@ func TestNestedArrayGeneration(t *testing.T) {
 	if !ok {
 		t.Errorf("Expected to find the Cities field on the FavouriteBars, but didn't. The struct is %+v", fbStruct)
 	}
-	if f.Type != "[]*City" {
-		t.Errorf("Expected to find that the Cities array was of type *City, but it was of %s", f.Type)
+	if f.Type != "[]City" {
+		t.Errorf("Expected to find that the Cities array was of type []City, but it was of %s", f.Type)
 	}
 
 	f, ok = fbStruct.Fields["Tags"]
@@ -719,7 +719,7 @@ func TestTypeAliases(t *testing.T) {
 			aliases: 1,
 		},
 		{
-			gotype: "[]*Foo",
+			gotype: "[]Foo",
 			input: &Schema{TypeValue: "array",
 				Items: &Schema{
 					TypeValue: "object",

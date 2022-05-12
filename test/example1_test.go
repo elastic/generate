@@ -3,6 +3,8 @@ package test
 import (
 	"encoding/json"
 	"testing"
+
+	example1 "github.com/elastic/go-json-schema-generate/test/example1_gen"
 )
 
 func TestExample1(t *testing.T) {

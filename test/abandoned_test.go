@@ -2,6 +2,8 @@ package test
 
 import (
 	"testing"
+
+	abandoned "github.com/elastic/go-json-schema-generate/test/abandoned_gen"
 )
 
 func TestAbandoned(t *testing.T) {

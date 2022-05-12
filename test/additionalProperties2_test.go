@@ -5,6 +5,8 @@ import (
 	"log"
 	"reflect"
 	"testing"
+
+	additionalProperties2 "github.com/elastic/go-json-schema-generate/test/additionalProperties2_gen"
 )
 
 func TestMarshalUnmarshal(t *testing.T) {
@@ -37,7 +39,7 @@ func TestMarshalUnmarshal(t *testing.T) {
 						"red": {
 							"blue": {
 								Color: "green",
-								Conditions: []*additionalProperties2.ConditionsItems{
+								Conditions: []additionalProperties2.ConditionsItems{
 									{Name: "dry"},
 								},
 								Density: 42.42,
