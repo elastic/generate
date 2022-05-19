@@ -785,6 +785,63 @@ func TestTypeAliases(t *testing.T) {
 	}
 }
 
+func TestImportTypeDetection(t *testing.T) {
+	tests := []struct {
+		name   string
+		input  *Schema
+		expect []string
+	}{{
+		name: "no additional types",
+		input: &Schema{
+			Title:     "example",
+			TypeValue: "object",
+			Properties: map[string]*Schema{
+				"key": {TypeValue: "string"},
+			},
+		},
+		expect: []string{},
+	}, {
+		name: "string/date-time imports time",
+		input: &Schema{
+			Title:     "example",
+			TypeValue: "object",
+			Properties: map[string]*Schema{
+				"key": {
+					TypeValue: "string",
+					Format:    "date-time",
+				},
+			},
+		},
+		expect: []string{"time"},
+	}}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			test.input.Init()
+			g := New(test.input)
+			err := g.CreateTypes(conventionStub)
+
+			if err != nil {
+				t.Fatal(err)
+			}
+			vals := make([]string, 0)
+			for _, strct := range g.Structs {
+				vals = append(vals, strct.importTypes...)
+			}
+
+			if len(vals) != len(test.expect) {
+				t.Fatalf("Expected %d values in import types, got %d", len(test.expect), len(vals))
+			}
+
+			for i, s := range test.expect {
+				if vals[i] != s {
+					t.Errorf("Expected value %d of import types to be %q, got %q", i, s, vals[i])
+				}
+			}
+
+		})
+	}
+}
+
 // Root is an example of a generated type.
 type Root struct {
 	Name interface{} `json:"name,omitempty"`

@@ -1,0 +1,17 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Calendar",
+    "description": "A calendar",
+    "type": "object",
+    "properties": {
+        "date": {
+            "description": "A date",
+            "type": "string",
+            "format": "date-time"
+        }
+    },
+    "required": [
+        "date"
+    ]
+}
+

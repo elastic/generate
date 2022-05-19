@@ -201,6 +201,9 @@ func (g *Generator) processObject(name string, schema *Schema, conventions map[s
 			Description: prop.Description,
 			Format:      prop.Format,
 		}
+		if f.Type == "string" && f.Format == "date-time" {
+			strct.importTypes = append(strct.importTypes, "time")
+		}
 		if f.Required {
 			strct.GenerateCode = true
 		}
@@ -324,7 +327,7 @@ func (g *Generator) getSchemaName(keyName string, schema *Schema, conventions ma
 		return getGolangName(schema.JSONKey, conventions)
 	}
 	if schema.Parent != nil && schema.Parent.JSONKey != "" {
-		return getGolangName(schema.Parent.JSONKey + "Item", conventions)
+		return getGolangName(schema.Parent.JSONKey+"Item", conventions)
 	}
 	g.anonCount++
 	return fmt.Sprintf("Anonymous%d", g.anonCount)
@@ -395,6 +398,7 @@ type Struct struct {
 
 	GenerateCode   bool
 	AdditionalType string
+	importTypes    []string // addition packages to include when importing
 }
 
 // Field defines the data required to generate a field in Go.
