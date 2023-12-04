@@ -75,7 +75,7 @@ func formatCustomTypes() map[string]stringFormatType {
 			TypeName:    "time.Time",
 		},
 		"uuid": {
-			PackageName: "uuid",
+			PackageName: "github.com/google/uuid",
 			TypeName:    "uuid.UUID",
 		},
 	}
