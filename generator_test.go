@@ -813,6 +813,19 @@ func TestImportTypeDetection(t *testing.T) {
 			},
 		},
 		expect: []string{"time"},
+	}, {
+		name: "string/uuid imports uuid",
+		input: &Schema{
+			Title:     "example",
+			TypeValue: "object",
+			Properties: map[string]*Schema{
+				"key": {
+					TypeValue: "string",
+					Format:    "uuid",
+				},
+			},
+		},
+		expect: []string{"uuid"},
 	}}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {

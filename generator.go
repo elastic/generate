@@ -14,19 +14,28 @@ type Generator struct {
 	resolver *RefResolver
 	Structs  map[string]Struct
 	Aliases  map[string]Field
+	// provides the mapping of "string field with explicitly specified `format`"
+	// to Go typed member of the generated struct for this format
+	customStringTypes map[string]stringFormatType
 	// cache for reference types; k=url v=type
 	refs      map[string]string
 	anonCount int
 }
 
+type stringFormatType struct {
+	PackageName string
+	TypeName    string
+}
+
 // New creates an instance of a generator which will produce structs.
 func New(schemas ...*Schema) *Generator {
 	return &Generator{
-		schemas:  schemas,
-		resolver: NewRefResolver(schemas),
-		Structs:  make(map[string]Struct),
-		Aliases:  make(map[string]Field),
-		refs:     make(map[string]string),
+		schemas:           schemas,
+		resolver:          NewRefResolver(schemas),
+		Structs:           make(map[string]Struct),
+		Aliases:           make(map[string]Field),
+		refs:              make(map[string]string),
+		customStringTypes: formatCustomTypes(),
 	}
 }
 
@@ -57,6 +66,19 @@ func (g *Generator) CreateTypes(conventions map[string]string) (err error) {
 		}
 	}
 	return
+}
+
+func formatCustomTypes() map[string]stringFormatType {
+	return map[string]stringFormatType{
+		"date-time": {
+			PackageName: "time",
+			TypeName:    "time.Time",
+		},
+		"uuid": {
+			PackageName: "github.com/google/uuid",
+			TypeName:    "uuid.UUID",
+		},
+	}
 }
 
 // process a block of definitions
@@ -108,7 +130,7 @@ func (g *Generator) processSchema(schemaName string, schema *Schema, conventions
 			}
 			switch schemaType {
 			case "object":
-				rv, err := g.processObject(name, schema, conventions)
+				rv, err := g.processObject(name, schema, conventions, g.customStringTypes)
 				if err != nil {
 					return "", err
 				}
@@ -175,7 +197,12 @@ func (g *Generator) processArray(name string, schema *Schema, conventions map[st
 // name: name of the struct (calculated by caller)
 // schema: detail incl properties & child objects
 // returns: generated type
-func (g *Generator) processObject(name string, schema *Schema, conventions map[string]string) (typ string, err error) {
+func (g *Generator) processObject(
+	name string,
+	schema *Schema,
+	conventions map[string]string,
+	customTypes map[string]stringFormatType,
+) (typ string, err error) {
 	strct := Struct{
 		ID:          schema.ID(),
 		Name:        name,
@@ -201,8 +228,10 @@ func (g *Generator) processObject(name string, schema *Schema, conventions map[s
 			Description: prop.Description,
 			Format:      prop.Format,
 		}
-		if f.Type == "string" && f.Format == "date-time" {
-			strct.importTypes = append(strct.importTypes, "time")
+		if f.Type == "string" && f.Format != "" {
+			if customTypeForFormat, ok := customTypes[f.Format]; ok {
+				strct.importTypes = append(strct.importTypes, customTypeForFormat.PackageName)
+			}
 		}
 		if f.Required {
 			strct.GenerateCode = true
