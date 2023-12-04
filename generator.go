@@ -10,10 +10,12 @@ import (
 
 // Generator will produce structs from the JSON schema.
 type Generator struct {
-	schemas           []*Schema
-	resolver          *RefResolver
-	Structs           map[string]Struct
-	Aliases           map[string]Field
+	schemas  []*Schema
+	resolver *RefResolver
+	Structs  map[string]Struct
+	Aliases  map[string]Field
+	// provides the mapping of "string field with explicitly specified `format`"
+	// to Go typed member of the generated struct for this format
 	customStringTypes map[string]stringFormatType
 	// cache for reference types; k=url v=type
 	refs      map[string]string
@@ -28,13 +30,11 @@ type stringFormatType struct {
 // New creates an instance of a generator which will produce structs.
 func New(schemas ...*Schema) *Generator {
 	return &Generator{
-		schemas:  schemas,
-		resolver: NewRefResolver(schemas),
-		Structs:  make(map[string]Struct),
-		Aliases:  make(map[string]Field),
-		refs:     make(map[string]string),
-		// provides the mapping of "string field with explicitly specified `format`"
-		// to Go typed member of the generated struct for this format
+		schemas:           schemas,
+		resolver:          NewRefResolver(schemas),
+		Structs:           make(map[string]Struct),
+		Aliases:           make(map[string]Field),
+		refs:              make(map[string]string),
 		customStringTypes: formatCustomTypes(),
 	}
 }
