@@ -171,8 +171,10 @@ func Output(w io.Writer, g *Generator, pkg string, skipCode bool, esdoc bool) {
 			ftype := f.Type
 			if ftype == "int" {
 				ftype = "int64"
-			} else if ftype == "string" && f.Format == "date-time" {
-				ftype = "time.Time"
+			} else if ftype == "string" && f.Format != "" {
+				if customStringType, ok := g.customStringTypes[f.Format]; ok {
+					ftype = customStringType.TypeName
+				}
 			}
 			if f.Format == "raw" {
 				ftype = "json.RawMessage"
